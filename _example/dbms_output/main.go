@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/mattn/go-oci8"
+	_ "github.com/hpfousac/go-oci8"
 )
 
 func main() {

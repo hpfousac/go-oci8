@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mattn/go-oci8"
+	"github.com/hpfousac/go-oci8"
 )
 
 type ID string

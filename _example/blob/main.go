@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-oci8"
+	_ "github.com/hpfousac/go-oci8"
 	"os"
 	"strings"
 )
