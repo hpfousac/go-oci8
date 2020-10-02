@@ -15,18 +15,7 @@ import (
 
 // to run database tests
 // go test -v github.com/mattn/go-oci8 -args -disableDatabase=false -hostValid type_hostname_here -username type_username_here -password "type_password_here"
-// note minimum Go version for testing is 1.8
-
-/*
-note that testing needs an Oracle user and the following:
-
-create or replace function TYPE_USER_HERE.SLEEP_SECONDS (p_seconds number) return integer is
-begin
-  dbms_lock.sleep(p_seconds);
-  return 1;
-end SLEEP_SECONDS;
-/
-*/
+// look at test.sh for Oracle user setup example
 
 var (
 	TestDisableDatabase      bool
@@ -49,14 +38,9 @@ var (
 	testString1        string
 	testByteSlice2000  []byte
 	testByteSlice4000  []byte
-	testByteSlice16383 []byte
 	testByteSlice32767 []byte
-
-	testTimeLocUTC *time.Location
-	testTimeLocGMT *time.Location
-	testTimeLocEST *time.Location
-	testTimeLocMST *time.Location
-	testTimeLocNZ  *time.Location
+	testByteSlice65535 []byte
+	testByteSlice70000 []byte
 
 	benchmarkSelectTableName    string
 	benchmarkSelectTableOnce    sync.Once
@@ -179,34 +163,25 @@ func setupForTesting() int {
 	for i = 0; i < 4000; i++ {
 		testByteSlice4000[i] = byte(i)
 	}
-	testByteSlice16383 = make([]byte, 16383)
-	for i = 0; i < 16383; i++ {
-		testByteSlice16383[i] = byte(i)
-	}
 	testByteSlice32767 = make([]byte, 32767)
 	for i = 0; i < 32767; i++ {
 		testByteSlice32767[i] = byte(i)
 	}
-
-	testTimeLocUTC, _ = time.LoadLocation("UTC")
-	testTimeLocGMT, _ = time.LoadLocation("GMT")
-	testTimeLocEST, _ = time.LoadLocation("EST")
-	testTimeLocMST, _ = time.LoadLocation("MST")
-	testTimeLocNZ, _ = time.LoadLocation("NZ")
+	testByteSlice65535 = make([]byte, 65535)
+	for i = 0; i < 65535; i++ {
+		testByteSlice65535[i] = byte(i)
+	}
+	testByteSlice70000 = make([]byte, 70000)
+	for i = 0; i < 70000; i++ {
+		testByteSlice70000[i] = byte(i)
+	}
 
 	return 0
 }
 
 // TestParseDSN tests parsing the DSN
 func TestParseDSN(t *testing.T) {
-	var (
-		pacific *time.Location
-		err     error
-	)
-
-	if pacific, err = time.LoadLocation("America/Los_Angeles"); err != nil {
-		panic(err)
-	}
+	t.Parallel()
 
 	const prefetchRows = 0
 	const prefetchMemory = 4096
@@ -215,11 +190,11 @@ func TestParseDSN(t *testing.T) {
 		dsnString   string
 		expectedDSN *DSN
 	}{
-		{"oracle://xxmc:xxmc@107.20.30.169:1521/ORCL?loc=America%2FLos_Angeles", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, Location: pacific}},
-		{"xxmc/xxmc@107.20.30.169:1521/ORCL?loc=America%2FLos_Angeles", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, Location: pacific}},
-		{"sys/syspwd@107.20.30.169:1521/ORCL?loc=America%2FLos_Angeles&as=sysdba", &DSN{Username: "sys", Password: "syspwd", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, Location: pacific, operationMode: 0x00000002}}, // with operationMode: 0x00000002 = C.OCI_SYDBA
-		{"xxmc/xxmc@107.20.30.169:1521/ORCL", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, Location: time.Local}},
-		{"xxmc/xxmc@107.20.30.169/ORCL", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, Location: time.Local}},
+		{"oracle://xxmc:xxmc@107.20.30.169:1521/ORCL?loc=America%2FPhoenix", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, timeLocation: timeLocations[5]}},
+		{"xxmc/xxmc@107.20.30.169:1521/ORCL?loc=America%2FPhoenix", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, timeLocation: timeLocations[5]}},
+		{"sys/syspwd@107.20.30.169:1521/ORCL?loc=America%2FPhoenix&as=sysdba", &DSN{Username: "sys", Password: "syspwd", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, timeLocation: timeLocations[5], operationMode: 0x00000002}}, // with operationMode: 0x00000002 = C.OCI_SYDBA
+		{"xxmc/xxmc@107.20.30.169:1521/ORCL", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169:1521/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, timeLocation: time.UTC}},
+		{"xxmc/xxmc@107.20.30.169/ORCL", &DSN{Username: "xxmc", Password: "xxmc", Connect: "107.20.30.169/ORCL", prefetchRows: prefetchRows, prefetchMemory: prefetchMemory, timeLocation: time.UTC}},
 	}
 
 	for _, tt := range dsnTests {

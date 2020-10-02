@@ -1,7 +1,9 @@
 # go-oci8
 
 [![GoDoc Reference](https://godoc.org/github.com/mattn/go-oci8?status.svg)](http://godoc.org/github.com/mattn/go-oci8)
-[![Build Status](https://travis-ci.org/mattn/go-oci8.svg)](https://travis-ci.org/mattn/go-oci8)
+[![Build Status](https://travis-ci.org/mattn/go-oci8.svg?branch=master)](https://travis-ci.org/mattn/go-oci8)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mattn/go-oci8)](https://goreportcard.com/report/github.com/mattn/go-oci8)
+
 
 ## Description
 
@@ -38,8 +40,8 @@ If you have a build error it is normaly because of a misconfiguration, make sure
 ```
 prefix=/devel/target/XXXXXXXXXXXXXXXXXXXXXXXXXX
 exec_prefix=${prefix}
-libdir=c:/oraclexe/app/oracle/product/11.2.0/server/oci/lib/msvc
-includedir=c:/oraclexe/app/oracle/product/11.2.0/server/oci/include/include
+libdir=C:/app/instantclient_12_2/sdk/oci/lib/msvc
+includedir=C:/app/instantclient_12_2/sdk/include
 
 glib_genmarshal=glib-genmarshal
 gobject_query=gobject-query
@@ -49,7 +51,7 @@ Name: oci8
 Description: oci8 library
 Libs: -L${libdir} -loci
 Cflags: -I${includedir}
-Version: 11.2
+Version: 12.2
 ```
 
 ### Linux
@@ -57,8 +59,8 @@ Version: 11.2
 ```
 prefix=/devel/target/XXXXXXXXXXXXXXXXXXXXXXXXXX
 exec_prefix=${prefix}
-libdir=/usr/lib/oracle/11.2/client64/lib
-includedir=/usr/include/oracle/11.2/client64
+libdir=/usr/lib/oracle/12.2/client64/lib
+includedir=/usr/include/oracle/12.2/client64
 
 glib_genmarshal=glib-genmarshal
 gobject_query=gobject-query
@@ -68,7 +70,7 @@ Name: oci8
 Description: oci8 library
 Libs: -L${libdir} -lclntsh
 Cflags: -I${includedir}
-Version: 11.2
+Version: 12.2
 ```
 
 ### MacOs
